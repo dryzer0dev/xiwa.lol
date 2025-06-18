@@ -1660,6 +1660,16 @@ function generateFullPageHTML() {
             z-index: 1;
         }
         
+        .profile-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
         .profile-photo-preview {
             position: absolute;
             top: ${photoPosition.y}px;
@@ -1798,14 +1808,14 @@ function generateFullPageHTML() {
     </audio>` : ''}
 
     <div class="profile-container">
+        ${profileData.background.type === 'video' && profileData.background.video ? `
+        <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; position: fixed; top: 0; left: 0; z-index: -1;">
+            <source src="${profileData.background.video}" type="video/mp4">
+            <source src="${profileData.background.video}" type="video/webm">
+            <source src="${profileData.background.video}" type="video/ogg">
+        </video>
+        ` : ''}
         <div class="profile-background">
-            ${profileData.background.type === 'video' && profileData.background.video ? `
-            <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;">
-                <source src="${profileData.background.video}" type="video/mp4">
-                <source src="${profileData.background.video}" type="video/webm">
-                <source src="${profileData.background.video}" type="video/ogg">
-            </video>
-            ` : ''}
         </div>
         <div class="profile-photo-preview">
             <div class="profile-photo"></div>
