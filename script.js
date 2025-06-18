@@ -763,13 +763,17 @@ function updateBackgroundColor() {
 }
 
 function updateBackgroundImage() {
-    profileData.background.image = document.getElementById('background-image-url').value;
-    updateBackground();
+    const imageUrl = document.getElementById('background-image-url').value;
+    if (imageUrl) {
+        profileData.background.image = imageUrl;
+    }
 }
 
 function updateBackgroundVideo() {
-    profileData.background.video = document.getElementById('background-video-url').value;
-    updateBackground();
+    const videoUrl = document.getElementById('background-video-url').value;
+    if (videoUrl) {
+        profileData.background.video = videoUrl;
+    }
 }
 
 function updateGradient() {
@@ -805,29 +809,36 @@ function updateBackground() {
 }
 
 function createBackgroundVideo(videoUrl) {
+    // Fonction sécurisée pour créer une vidéo de fond
     if (!videoUrl || !profileBackground) return;
     
-    // Supprimer l'ancienne vidéo s'il y en a une
-    const existingVideo = profileBackground.querySelector('video');
-    if (existingVideo) {
-        existingVideo.remove();
+    try {
+        // Supprimer l'ancienne vidéo s'il y en a une
+        const existingVideo = profileBackground.querySelector('video');
+        if (existingVideo) {
+            existingVideo.remove();
+        }
+        
+        const video = document.createElement('video');
+        video.src = videoUrl;
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        `;
+        
+        profileBackground.appendChild(video);
+    } catch (e) {
+        // Ignorer toutes les erreurs
     }
-    
-    const video = document.createElement('video');
-    video.src = videoUrl;
-    video.autoplay = true;
-    video.loop = true;
-    video.muted = true;
-    video.style.cssText = `
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    `;
-    
-    profileBackground.appendChild(video);
 }
 
 function handleImageUpload(event) {
@@ -837,7 +848,6 @@ function handleImageUpload(event) {
         reader.onload = function(e) {
             profileData.background.image = e.target.result;
             document.getElementById('background-image-url').value = e.target.result;
-            updateBackground();
         };
         reader.readAsDataURL(file);
     }
@@ -846,11 +856,17 @@ function handleImageUpload(event) {
 function handleVideoUpload(event) {
     const file = event.target.files[0];
     if (file) {
+        // Vérification rapide de la taille (max 20MB)
+        if (file.size > 20 * 1024 * 1024) {
+            alert('Fichier trop volumineux (max 20MB)');
+            event.target.value = '';
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = function(e) {
             profileData.background.video = e.target.result;
             document.getElementById('background-video-url').value = e.target.result;
-            updateBackground();
         };
         reader.readAsDataURL(file);
     }
@@ -859,114 +875,56 @@ function handleVideoUpload(event) {
 function handleMusicUpload(event) {
     const file = event.target.files[0];
     if (file) {
-        // Vérifier le type de fichier
-        if (!file.type.startsWith('audio/')) {
-            alert('Veuillez sélectionner un fichier audio valide.');
+        // Vérification rapide de la taille (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Fichier trop volumineux (max 10MB)');
+            event.target.value = '';
             return;
         }
         
         const reader = new FileReader();
         reader.onload = function(e) {
-            try {
-                profileData.music.url = e.target.result;
-                document.getElementById('music-url').value = e.target.result;
-                
-                // Mettre à jour l'élément audio existant
-                if (backgroundMusic) {
-                    backgroundMusic.src = profileData.music.url;
-                    backgroundMusic.load(); // Recharger l'audio
-                }
-                
-                // Sauvegarder les données
-                localStorage.setItem('profileData', JSON.stringify(profileData));
-                
-                console.log('Musique chargée avec succès');
-            } catch (error) {
-                console.error('Erreur lors du chargement de la musique:', error);
-                alert('Erreur lors du chargement de la musique. Veuillez réessayer.');
-            }
+            profileData.music.url = e.target.result;
+            document.getElementById('music-url').value = e.target.result;
         };
-        
-        reader.onerror = function() {
-            console.error('Erreur lors de la lecture du fichier');
-            alert('Erreur lors de la lecture du fichier audio.');
-        };
-        
         reader.readAsDataURL(file);
     }
 }
 
 function updateMusicUrl() {
-    const url = document.getElementById('music-url').value.trim();
+    const url = document.getElementById('music-url').value;
     if (url) {
-        try {
-            profileData.music.url = url;
-            
-            // Mettre à jour l'élément audio existant
-            if (backgroundMusic) {
-                backgroundMusic.src = profileData.music.url;
-                backgroundMusic.load(); // Recharger l'audio
-            }
-            
-            // Sauvegarder les données
-            localStorage.setItem('profileData', JSON.stringify(profileData));
-            
-            console.log('URL de musique mise à jour');
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour de l\'URL:', error);
-        }
+        profileData.music.url = url;
     }
 }
 
 function updateMusicVolume() {
-    const volume = parseInt(document.getElementById('music-volume').value);
-    if (!isNaN(volume) && volume >= 0 && volume <= 100) {
-        profileData.music.volume = volume;
-        
-        if (backgroundMusic) {
-            backgroundMusic.volume = volume / 100;
-        }
-        
-        // Sauvegarder les données
-        localStorage.setItem('profileData', JSON.stringify(profileData));
-    }
+    const volume = document.getElementById('music-volume').value;
+    profileData.music.volume = volume;
 }
 
 function playMusic() {
+    // Fonction sécurisée pour la musique
     if (backgroundMusic && profileData.music.url) {
         try {
-            // S'assurer que le volume est correct
+            backgroundMusic.src = profileData.music.url;
             backgroundMusic.volume = profileData.music.volume / 100;
-            
-            // Jouer la musique
-            const playPromise = backgroundMusic.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    profileData.music.playing = true;
-                    console.log('Musique démarrée');
-                }).catch(error => {
-                    console.error('Erreur lors du démarrage de la musique:', error);
-                    // Ne pas afficher d'alerte pour les erreurs de politique de navigateur
-                    if (!error.message.includes('user gesture')) {
-                        alert('Impossible de démarrer la musique. Cliquez sur la page pour autoriser la lecture audio.');
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Erreur lors de la lecture de la musique:', error);
+            backgroundMusic.play().catch(() => {
+                // Ignorer les erreurs de lecture automatique
+            });
+        } catch (e) {
+            // Ignorer toutes les erreurs
         }
     }
 }
 
 function pauseMusic() {
+    // Fonction sécurisée pour la pause
     if (backgroundMusic) {
         try {
             backgroundMusic.pause();
-            profileData.music.playing = false;
-            console.log('Musique mise en pause');
-        } catch (error) {
-            console.error('Erreur lors de la pause de la musique:', error);
+        } catch (e) {
+            // Ignorer toutes les erreurs
         }
     }
 }
@@ -1298,12 +1256,42 @@ function showCodeModal() {
     const modal = document.getElementById('code-modal');
     modal.classList.remove('hidden');
     
-    // Générer et afficher le code
-    const { html, css, js } = generateSeparateCode();
+    // Générer le code HTML complet de la page
+    const fullPageHTML = generateFullPageHTML();
     
-    document.getElementById('html-output').textContent = html;
-    document.getElementById('css-output').textContent = css;
-    document.getElementById('js-output').textContent = js;
+    // Extraire les différentes parties du code
+    const htmlMatch = fullPageHTML.match(/<html[^>]*>([\s\S]*)<\/html>/i);
+    const headMatch = fullPageHTML.match(/<head>([\s\S]*)<\/head>/i);
+    const bodyMatch = fullPageHTML.match(/<body>([\s\S]*)<\/body>/i);
+    
+    let htmlCode = '';
+    let cssCode = '';
+    let jsCode = '';
+    
+    if (htmlMatch) {
+        htmlCode = fullPageHTML;
+    }
+    
+    if (headMatch) {
+        // Extraire le CSS du head
+        const styleMatch = headMatch[1].match(/<style>([\s\S]*)<\/style>/i);
+        if (styleMatch) {
+            cssCode = styleMatch[1];
+        }
+    }
+    
+    if (bodyMatch) {
+        // Extraire le JavaScript du body
+        const scriptMatch = bodyMatch[1].match(/<script>([\s\S]*)<\/script>/i);
+        if (scriptMatch) {
+            jsCode = scriptMatch[1];
+        }
+    }
+    
+    // Afficher le code
+    document.getElementById('html-output').textContent = htmlCode;
+    document.getElementById('css-output').textContent = cssCode;
+    document.getElementById('js-output').textContent = jsCode;
     
     // Activer l'onglet HTML par défaut
     switchCodeTab({ target: document.querySelector('[data-tab="html"]') });
