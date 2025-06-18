@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personnalisez Votre Profil</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Écran d'accueil -->
+    <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Personnalisez Votre Profil</h1>
+            <p class="welcome-subtitle">Créez un profil unique et personnalisé</p>
+            <button id="enter-btn" class="enter-btn">Appuyez pour entrer</button>
+        </div>
+    </div>
+
+    <!-- Éditeur principal -->
+    <div id="editor" class="editor hidden">
+        <div class="editor-container">
+            <!-- Panneau de prévisualisation -->
+            <div class="preview-panel">
+                <div id="profile-preview" class="profile-preview">
+                    <div id="profile-background" class="profile-background"></div>
+                    
+                    <!-- Photo de profil -->
+                    <div id="profile-photo-preview" class="profile-photo-preview draggable" data-element="photo">
+                        <div id="profile-photo" class="profile-photo"></div>
+                    </div>
+                    
+                    <!-- Contenu du profil -->
+                    <div id="profile-content" class="profile-content draggable" data-element="content">
+                        <h2 id="profile-username" class="profile-username">Votre Pseudo</h2>
+                        <p id="profile-handle" class="profile-handle">@votre_handle</p>
+                        
+                        <!-- Description -->
+                        <div id="profile-description-display" class="profile-description-display">
+                            Votre description personnalisée avec emojis et GIFs ! 🎉✨
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panneau de contrôle -->
+            <div class="control-panel">
+                <h2>Personnalisation</h2>
+                
+                <!-- Section Fond d'écran de la page -->
+                <div class="control-section">
+                    <h3>Fond d'écran de la page</h3>
+                    <div class="option-group">
+                        <label>Type de fond:</label>
+                        <select id="page-background-type">
+                            <option value="gradient">Dégradé</option>
+                            <option value="color">Couleur unie</option>
+                            <option value="image">Image</option>
+                            <option value="video">Vidéo</option>
+                            <option value="animated">Animé</option>
+                        </select>
+                    </div>
+                    
+                    <div id="page-gradient-section" class="option-group">
+                        <label>Couleur 1:</label>
+                        <input type="color" id="page-gradient-color1" value="#667eea">
+                        <label>Couleur 2:</label>
+                        <input type="color" id="page-gradient-color2" value="#764ba2">
+                        <label>Direction:</label>
+                        <select id="page-gradient-direction">
+                            <option value="135deg">Diagonal</option>
+                            <option value="to right">Horizontal</option>
+                            <option value="to bottom">Vertical</option>
+                            <option value="45deg">Diagonal 2</option>
+                        </select>
+                    </div>
+                    
+                    <div id="page-color-section" class="option-group" style="display: none;">
+                        <label>Couleur:</label>
+                        <input type="color" id="page-background-color" value="#667eea">
+                    </div>
+                    
+                    <div id="page-image-section" class="option-group" style="display: none;">
+                        <label>URL de l'image:</label>
+                        <input type="url" id="page-background-image-url" placeholder="https://example.com/image.jpg">
+                        <button id="upload-page-image-btn" class="upload-btn">Télécharger une image</button>
+                        <input type="file" id="page-image-upload" accept="image/*" hidden>
+                    </div>
+                    
+                    <div id="page-video-section" class="option-group" style="display: none;">
+                        <label>URL de la vidéo:</label>
+                        <input type="url" id="page-background-video-url" placeholder="https://example.com/video.mp4">
+                        <button id="upload-page-video-btn" class="upload-btn">Télécharger une vidéo</button>
+                        <input type="file" id="page-video-upload" accept="video/*" hidden>
+                    </div>
+                    
+                    <div id="page-animation-section" class="option-group" style="display: none;">
+                        <label>Style d'animation:</label>
+                        <select id="page-animation-style">
+                            <option value="aurora">Aurore boréale</option>
+                            <option value="galaxy">Galaxie</option>
+                            <option value="ocean">Océan</option>
+                            <option value="fire">Feu</option>
+                            <option value="matrix">Matrix</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Section Fond d'écran du profil -->
+                <div class="control-section">
+                    <h3>Fond d'écran du profil</h3>
+                    <div class="option-group">
+                        <label>Type de fond:</label>
+                        <select id="background-type">
+                            <option value="color">Couleur unie</option>
+                            <option value="image">Image</option>
+                            <option value="video">Vidéo</option>
+                            <option value="gradient">Dégradé</option>
+                        </select>
+                    </div>
+                    
+                    <div id="color-section" class="option-group">
+                        <label>Couleur:</label>
+                        <input type="color" id="background-color" value="#1a1a1a">
+                    </div>
+                    
+                    <div id="image-section" class="option-group" style="display: none;">
+                        <label>URL de l'image:</label>
+                        <input type="url" id="background-image-url" placeholder="https://example.com/image.jpg">
+                        <button id="upload-image-btn" class="upload-btn">Télécharger une image</button>
+                        <input type="file" id="image-upload" accept="image/*" hidden>
+                    </div>
+                    
+                    <div id="video-section" class="option-group" style="display: none;">
+                        <label>URL de la vidéo:</label>
+                        <input type="url" id="background-video-url" placeholder="https://example.com/video.mp4">
+                        <button id="upload-video-btn" class="upload-btn">Télécharger une vidéo</button>
+                        <input type="file" id="video-upload" accept="video/*" hidden>
+                    </div>
+                    
+                    <div id="gradient-section" class="option-group" style="display: none;">
+                        <label>Couleur 1:</label>
+                        <input type="color" id="gradient-color1" value="#ff6b6b">
+                        <label>Couleur 2:</label>
+                        <input type="color" id="gradient-color2" value="#4ecdc4">
+                        <label>Direction:</label>
+                        <select id="gradient-direction">
+                            <option value="to right">Horizontal</option>
+                            <option value="to bottom">Vertical</option>
+                            <option value="45deg">Diagonal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section Musique -->
+                <div class="control-section">
+                    <h3>Musique de fond</h3>
+                    <div class="option-group">
+                        <label>URL de la musique:</label>
+                        <input type="url" id="music-url" placeholder="https://example.com/music.mp3">
+                        <button id="upload-music-btn" class="upload-btn">Télécharger une musique</button>
+                        <input type="file" id="music-upload" accept="audio/*" hidden>
+                    </div>
+                    <div class="option-group">
+                        <label>Volume:</label>
+                        <input type="range" id="music-volume" min="0" max="100" value="50">
+                        <span id="volume-display">50%</span>
+                    </div>
+                    <button id="play-music-btn" class="music-btn">▶️ Jouer</button>
+                    <button id="pause-music-btn" class="music-btn">⏸️ Pause</button>
+                </div>
+
+                <!-- Section Pseudo et Handle -->
+                <div class="control-section">
+                    <h3>Informations du profil</h3>
+                    <div class="option-group">
+                        <label>Pseudo:</label>
+                        <input type="text" id="username-input" value="Votre Pseudo" maxlength="20">
+                    </div>
+                    <div class="option-group">
+                        <label>Handle (@):</label>
+                        <input type="text" id="handle-input" value="votre_handle" maxlength="15">
+                    </div>
+                </div>
+
+                <!-- Section Photo de profil -->
+                <div class="control-section">
+                    <h3>Photo de profil</h3>
+                    <div class="option-group">
+                        <label>URL de la photo:</label>
+                        <input type="url" id="profile-photo-url" placeholder="https://example.com/avatar.jpg">
+                        <button id="upload-profile-photo-btn" class="upload-btn">Télécharger une photo</button>
+                        <input type="file" id="profile-photo-upload" accept="image/*" hidden>
+                    </div>
+                    <div class="option-group">
+                        <label>Forme de la photo:</label>
+                        <select id="photo-shape">
+                            <option value="circle">Cercle</option>
+                            <option value="square">Carré</option>
+                            <option value="rounded">Arrondi</option>
+                            <option value="hexagon">Hexagone</option>
+                            <option value="diamond">Diamant</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Taille de la photo:</label>
+                        <input type="range" id="photo-size" min="40" max="120" value="80">
+                        <span id="photo-size-display">80px</span>
+                    </div>
+                </div>
+
+                <!-- Section Description -->
+                <div class="control-section">
+                    <h3>Description</h3>
+                    <div class="option-group">
+                        <label>Description:</label>
+                        <textarea id="profile-description" placeholder="Décrivez-vous ici... (max 200 caractères)" maxlength="200" rows="3">Votre description personnalisée avec emojis et GIFs ! 🎉✨</textarea>
+                    </div>
+                    <div class="option-group">
+                        <label>Emoji/GIF au début:</label>
+                        <div id="emoji-picker" class="emoji-picker">
+                            <button type="button" class="emoji-btn" data-emoji="😊">😊</button>
+                            <button type="button" class="emoji-btn" data-emoji="🎮">🎮</button>
+                            <button type="button" class="emoji-btn" data-emoji="💻">💻</button>
+                            <button type="button" class="emoji-btn" data-emoji="🎨">🎨</button>
+                            <button type="button" class="emoji-btn" data-emoji="🎵">🎵</button>
+                            <button type="button" class="emoji-btn" data-emoji="🌟">🌟</button>
+                            <button type="button" class="emoji-btn" data-emoji="🔥">🔥</button>
+                            <button type="button" class="emoji-btn" data-emoji="⚡">⚡</button>
+                            <button type="button" class="emoji-btn" data-emoji="🎯">🎯</button>
+                            <button type="button" class="emoji-btn" data-emoji="💎">💎</button>
+                            <button type="button" class="emoji-btn" data-emoji="🚀">🚀</button>
+                            <button type="button" class="emoji-btn" data-emoji="🌈">🌈</button>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label>Rechercher des GIFs:</label>
+                        <input type="text" id="gif-search" placeholder="Rechercher des GIFs...">
+                        <div id="gif-results" class="gif-results"></div>
+                    </div>
+                </div>
+
+                <!-- Section Position des éléments -->
+                <div class="control-section">
+                    <h3>Position des éléments</h3>
+                    <div class="option-group">
+                        <p class="help-text">💡 <strong>Astuce :</strong> Cliquez et glissez les éléments (photo et contenu) pour les repositionner !</p>
+                    </div>
+                    <div class="option-group">
+                        <label>Réinitialiser les positions:</label>
+                        <button id="reset-positions-btn" class="action-btn">🔄 Réinitialiser les positions</button>
+                    </div>
+                </div>
+
+                <!-- Section Effets du pseudo -->
+                <div class="control-section">
+                    <h3>Effet du pseudo</h3>
+                    <div class="option-group">
+                        <label>Style d'effet:</label>
+                        <select id="username-effect">
+                            <option value="none">Aucun effet</option>
+                            <option value="glow">Lueur</option>
+                            <option value="neon">Néon</option>
+                            <option value="rainbow">Arc-en-ciel</option>
+                            <option value="typing">Machine à écrire</option>
+                            <option value="glitch">Glitch</option>
+                            <option value="fire">Feu</option>
+                            <option value="ice">Glace</option>
+                            <option value="electric">Électrique</option>
+                            <option value="hologram">Hologramme</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section Animation -->
+                <div class="control-section">
+                    <h3>Animation du profil</h3>
+                    <div class="option-group">
+                        <label>Type d'animation:</label>
+                        <select id="animation-type">
+                            <option value="none">Aucune</option>
+                            <option value="tilt">Inclinaison 3D</option>
+                            <option value="bounce">Rebond</option>
+                            <option value="pulse">Pulsation</option>
+                            <option value="shake">Secousse</option>
+                            <option value="rotate">Rotation</option>
+                            <option value="float">Flottement</option>
+                            <option value="glow">Lueur</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Intensité:</label>
+                        <input type="range" id="animation-intensity" min="1" max="10" value="5">
+                        <span id="intensity-display">5</span>
+                    </div>
+                </div>
+
+                <!-- Section Zoom -->
+                <div class="control-section">
+                    <h3>Effet de zoom</h3>
+                    <div class="option-group">
+                        <label>Activer le zoom au survol:</label>
+                        <input type="checkbox" id="zoom-effect" checked>
+                    </div>
+                    <div class="option-group">
+                        <label>Niveau de zoom:</label>
+                        <input type="range" id="zoom-level" min="1.1" max="2" step="0.1" value="1.2">
+                        <span id="zoom-display">1.2x</span>
+                    </div>
+                </div>
+
+                <!-- Section Transparence -->
+                <div class="control-section">
+                    <h3>Transparence du fond</h3>
+                    <div class="option-group">
+                        <label>Niveau de transparence:</label>
+                        <input type="range" id="background-opacity" min="0" max="100" value="100">
+                        <span id="opacity-display">100%</span>
+                    </div>
+                </div>
+
+                <!-- Section Curseur personnalisé -->
+                <div class="control-section">
+                    <h3>Curseur personnalisé</h3>
+                    <div class="option-group">
+                        <label>Activer le curseur personnalisé:</label>
+                        <input type="checkbox" id="custom-cursor">
+                    </div>
+                    <div class="option-group">
+                        <label>Style du curseur:</label>
+                        <select id="cursor-style">
+                            <option value="default">Défaut</option>
+                            <option value="pointer">Pointeur</option>
+                            <option value="crosshair">Viseur</option>
+                            <option value="grab">Main</option>
+                            <option value="zoom-in">Zoom +</option>
+                            <option value="zoom-out">Zoom -</option>
+                            <option value="move">Déplacer</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section Effets supplémentaires -->
+                <div class="control-section">
+                    <h3>Effets supplémentaires</h3>
+                    <div class="option-group">
+                        <label>Particules en arrière-plan:</label>
+                        <input type="checkbox" id="particles-effect">
+                    </div>
+                    <div class="option-group">
+                        <label>Effet de distorsion:</label>
+                        <input type="checkbox" id="distortion-effect">
+                    </div>
+                    <div class="option-group">
+                        <label>Animation de chargement:</label>
+                        <input type="checkbox" id="loading-animation">
+                    </div>
+                    <div class="option-group">
+                        <label>Effet de miroir:</label>
+                        <input type="checkbox" id="mirror-effect">
+                    </div>
+                    <div class="option-group">
+                        <label>Mode sombre/clair:</label>
+                        <input type="checkbox" id="dark-mode-toggle">
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="action-buttons">
+                    <button id="preview-btn" class="action-btn preview-btn">👁️ Voir mon profil</button>
+                    <button id="fullpage-btn" class="action-btn fullpage-btn">🌐 Page complète</button>
+                    <button id="code-btn" class="action-btn code-btn">💻 Voir le code source</button>
+                    <button id="reset-btn" class="action-btn reset-btn">🔄 Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour la prévisualisation -->
+    <div id="preview-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Prévisualisation de votre profil</h3>
+            <iframe id="preview-frame" class="preview-frame"></iframe>
+        </div>
+    </div>
+
+    <!-- Modal pour le code source -->
+    <div id="code-modal" class="modal hidden">
+        <div class="modal-content code-modal">
+            <span class="close-btn">&times;</span>
+            <h3>Code source de votre profil</h3>
+            <div class="code-tabs">
+                <button class="code-tab active" data-tab="html">HTML</button>
+                <button class="code-tab" data-tab="css">CSS</button>
+                <button class="code-tab" data-tab="js">JavaScript</button>
+            </div>
+            <div class="code-content">
+                <pre id="html-output" class="code-output active"></pre>
+                <pre id="css-output" class="code-output"></pre>
+                <pre id="js-output" class="code-output"></pre>
+            </div>
+            <button id="copy-code-btn" class="copy-btn">📋 Copier le code</button>
+        </div>
+    </div>
+
+    <!-- Curseur personnalisé -->
+    <div id="custom-cursor-element" class="custom-cursor hidden"></div>
+
+    <!-- Audio pour la musique -->
+    <audio id="background-music" loop></audio>
+
+    <script src="script.js"></script>
+</body>
+</html> 
