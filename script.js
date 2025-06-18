@@ -80,6 +80,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    // Charger les données sauvegardées
+    loadProfileData();
+    
     setupEventListeners();
     setupDragAndDrop();
     setupProfilePhoto();
@@ -92,6 +95,71 @@ function initializeApp() {
     updatePreview();
     updateDisplayValues();
     updateDisplayTexts();
+}
+
+// Fonction pour charger les données du profil depuis localStorage
+function loadProfileData() {
+    const savedData = localStorage.getItem('profileData');
+    if (savedData) {
+        try {
+            const loadedData = JSON.parse(savedData);
+            // Fusionner les données chargées avec les données par défaut
+            profileData = { ...profileData, ...loadedData };
+            console.log('Données du profil chargées:', profileData);
+            
+            // Mettre à jour l'interface avec les données chargées
+            updateInterfaceWithLoadedData();
+        } catch (error) {
+            console.error('Erreur lors du chargement des données:', error);
+        }
+    }
+}
+
+// Fonction pour mettre à jour l'interface avec les données chargées
+function updateInterfaceWithLoadedData() {
+    // Mettre à jour les champs de texte
+    if (profileData.username) {
+        const usernameInput = document.getElementById('username-input');
+        if (usernameInput) usernameInput.value = profileData.username;
+    }
+    
+    if (profileData.handle) {
+        const handleInput = document.getElementById('handle-input');
+        if (handleInput) handleInput.value = profileData.handle;
+    }
+    
+    if (profileData.description) {
+        const descInput = document.getElementById('profile-description');
+        if (descInput) descInput.value = profileData.description;
+    }
+    
+    // Mettre à jour les URLs
+    if (profileData.background.image) {
+        const imageUrlInput = document.getElementById('background-image-url');
+        if (imageUrlInput) imageUrlInput.value = profileData.background.image;
+    }
+    
+    if (profileData.background.video) {
+        const videoUrlInput = document.getElementById('background-video-url');
+        if (videoUrlInput) videoUrlInput.value = profileData.background.video;
+    }
+    
+    if (profileData.music.url) {
+        const musicUrlInput = document.getElementById('music-url');
+        if (musicUrlInput) musicUrlInput.value = profileData.music.url;
+    }
+    
+    // Mettre à jour les sélecteurs
+    if (profileData.background.type) {
+        const bgTypeSelect = document.getElementById('background-type');
+        if (bgTypeSelect) {
+            bgTypeSelect.value = profileData.background.type;
+            // Déclencher le changement pour afficher les bonnes sections
+            handleBackgroundTypeChange();
+        }
+    }
+    
+    console.log('Interface mise à jour avec les données chargées');
 }
 
 function initializeAudio() {
