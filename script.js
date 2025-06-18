@@ -1657,6 +1657,7 @@ function generateFullPageHTML() {
             position: absolute;
             top: 0;
             left: 0;
+            z-index: 1;
         }
         
         .profile-photo-preview {
@@ -1799,7 +1800,7 @@ function generateFullPageHTML() {
     <div class="profile-container">
         <div class="profile-background">
             ${profileData.background.type === 'video' && profileData.background.video ? `
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;">
                 <source src="${profileData.background.video}" type="video/mp4">
                 <source src="${profileData.background.video}" type="video/webm">
                 <source src="${profileData.background.video}" type="video/ogg">
@@ -1951,6 +1952,7 @@ function getBackgroundCSS() {
     switch(bg.type) {
         case 'color': return bg.color;
         case 'image': return `url('${bg.image}') center/cover`;
+        case 'video': return 'transparent'; // Fond transparent pour la vidéo
         case 'gradient': return `linear-gradient(${bg.gradient.direction}, ${bg.gradient.color1}, ${bg.gradient.color2})`;
         default: return '#1a1a1a';
     }
