@@ -15,6 +15,7 @@
     --matrix-green: #00ff41;
     --hologram-teal: #08fdd8;
     --galaxy-indigo: #5d3fd3;
+    --accent-color: #4ecdc4;
 }
 
 * {
@@ -1035,18 +1036,14 @@ body.page-bg-matrix::before {
 }
 
 @keyframes particleFloat {
-    0% {
-        transform: translateY(100vh) rotate(0deg);
+    0%, 100% { 
+        transform: translateY(0px) translateX(0px);
         opacity: 0;
     }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-100px) rotate(360deg);
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { 
+        transform: translateY(-150px) translateX(100px);
         opacity: 0;
     }
 }
@@ -1234,9 +1231,128 @@ body.dark-mode .preview-panel {
     transition: all 0.3s ease;
 }
 
+/* Bordures de photo */
+.profile-photo.border-none {
+    border: none;
+}
+
+.profile-photo.border-solid {
+    /* border: 3px solid #4ecdc4; */
+}
+
+.profile-photo.border-gradient {
+    border: 3px solid;
+    border-image: linear-gradient(45deg, #4ecdc4, #45b7d1, #96ceb4) 1;
+}
+
+.profile-photo.border-glow {
+    /* border: 3px solid #4ecdc4; */
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.6), 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
 .profile-photo-preview:hover .profile-photo {
     transform: scale(1.1);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Boutons de réseaux sociaux */
+.social-buttons {
+    position: absolute;
+    top: 120px;
+    left: 30px;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 10px;
+    z-index: 10;
+    transition: all 0.3s ease;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.social-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.social-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Couleurs des réseaux sociaux */
+.discord-btn {
+    background: #5865F2;
+}
+
+.discord-btn:hover {
+    background: #4752C4;
+    box-shadow: 0 0 15px rgba(88, 101, 242, 0.6);
+}
+
+.tiktok-btn {
+    background: #000000;
+}
+
+.tiktok-btn:hover {
+    background: #333333;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+}
+
+.gmail-btn {
+    background: #EA4335;
+}
+
+.gmail-btn:hover {
+    background: #D33426;
+    box-shadow: 0 0 15px rgba(234, 67, 53, 0.6);
+}
+
+.whatsapp-btn {
+    background: #25D366;
+}
+
+.whatsapp-btn:hover {
+    background: #20BA5A;
+    box-shadow: 0 0 15px rgba(37, 211, 102, 0.6);
+}
+
+/* Styles des boutons */
+.social-buttons.style-rounded .social-btn {
+    border-radius: 50%;
+}
+
+.social-buttons.style-square .social-btn {
+    border-radius: 8px;
+}
+
+.social-buttons.style-glow .social-btn {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.social-buttons.style-glow .social-btn:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.social-buttons.style-minimal .social-btn {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.social-buttons.style-minimal .social-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Contenu du profil */
@@ -1357,4 +1473,221 @@ body.dark-mode .preview-panel {
     .draggable::before {
         display: none;
     }
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Styles de menus */
+.control-panel.menu-style-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.control-panel.menu-style-neon {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--accent-color, #4ecdc4);
+    box-shadow: 0 0 20px var(--accent-color, #4ecdc4), inset 0 0 20px rgba(78, 205, 196, 0.1);
+}
+
+.control-panel.menu-style-gradient {
+    background: linear-gradient(135deg, var(--accent-color, #4ecdc4), #45b7d1);
+    border: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.control-panel.menu-style-minimal {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.control-panel.menu-style-dark {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #333;
+    color: white;
+}
+
+.control-panel.menu-style-light {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid #e0e0e0;
+    color: #333;
+}
+
+.control-panel.menu-style-rounded {
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid var(--accent-color, #4ecdc4);
+}
+
+.control-panel.menu-style-sharp {
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0.8);
+    border: 3px solid var(--accent-color, #4ecdc4);
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+
+/* Styles pour les sections de contrôle selon le style de menu */
+.control-panel.menu-style-neon .control-section {
+    border-bottom: 1px solid rgba(78, 205, 196, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.control-panel.menu-style-gradient .control-section {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.control-panel.menu-style-dark .control-section {
+    border-bottom: 1px solid #333;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.control-panel.menu-style-light .control-section {
+    border-bottom: 1px solid #e0e0e0;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.control-panel.menu-style-rounded .control-section {
+    border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    margin: 10px;
+}
+
+/* Styles pour les boutons selon le style de menu */
+.control-panel.menu-style-neon .action-btn {
+    background: transparent;
+    border: 2px solid var(--accent-color, #4ecdc4);
+    color: var(--accent-color, #4ecdc4);
+    box-shadow: 0 0 10px var(--accent-color, #4ecdc4);
+}
+
+.control-panel.menu-style-neon .action-btn:hover {
+    background: var(--accent-color, #4ecdc4);
+    color: black;
+    box-shadow: 0 0 20px var(--accent-color, #4ecdc4);
+}
+
+.control-panel.menu-style-gradient .action-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.control-panel.menu-style-gradient .action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.control-panel.menu-style-dark .action-btn {
+    background: var(--accent-color, #4ecdc4);
+    border: none;
+    color: black;
+}
+
+.control-panel.menu-style-light .action-btn {
+    background: var(--accent-color, #4ecdc4);
+    border: none;
+    color: white;
+}
+
+.control-panel.menu-style-rounded .action-btn {
+    border-radius: 20px;
+    background: var(--accent-color, #4ecdc4);
+    border: none;
+    color: white;
+}
+
+.control-panel.menu-style-sharp .action-btn {
+    background: var(--accent-color, #4ecdc4);
+    border: none;
+    color: white;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+/* Styles pour les inputs selon le style de menu */
+.control-panel.menu-style-neon input,
+.control-panel.menu-style-neon select,
+.control-panel.menu-style-neon textarea {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--accent-color, #4ecdc4);
+    color: white;
+}
+
+.control-panel.menu-style-gradient input,
+.control-panel.menu-style-gradient select,
+.control-panel.menu-style-gradient textarea {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.control-panel.menu-style-dark input,
+.control-panel.menu-style-dark select,
+.control-panel.menu-style-dark textarea {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #333;
+    color: white;
+}
+
+.control-panel.menu-style-light input,
+.control-panel.menu-style-light select,
+.control-panel.menu-style-light textarea {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e0e0;
+    color: #333;
+}
+
+.control-panel.menu-style-rounded input,
+.control-panel.menu-style-rounded select,
+.control-panel.menu-style-rounded textarea {
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+/* Polices d'interface */
+body.font-roboto {
+    font-family: 'Roboto', sans-serif;
+}
+
+body.font-orbitron {
+    font-family: 'Orbitron', monospace;
+}
+
+body.font-poppins {
+    font-family: 'Poppins', sans-serif;
+}
+
+body.font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+
+body.font-opensans {
+    font-family: 'Open Sans', sans-serif;
+}
+
+body.font-lato {
+    font-family: 'Lato', sans-serif;
+}
+
+body.font-raleway {
+    font-family: 'Raleway', sans-serif;
+}
+
+body.font-ubuntu {
+    font-family: 'Ubuntu', sans-serif;
+}
+
+body.font-nunito {
+    font-family: 'Nunito', sans-serif;
+}
+
+body.font-quicksand {
+    font-family: 'Quicksand', sans-serif;
 }

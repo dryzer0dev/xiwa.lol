@@ -80,16 +80,45 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
-    // Initialiser les valeurs par défaut
+    setupEventListeners();
+    setupDragAndDrop();
+    setupProfilePhoto();
+    setupDescription();
+    loadSavedPositions();
+    loadSocialUrls();
+    loadPhotoAndSocialPreferences();
+    loadInterfacePreferences();
+    initializeAudio();
+    updatePreview();
     updateDisplayValues();
-    setupCustomCursor();
-    setupParticles();
-    updatePageBackground();
-    updateBackground();
-    updateUsernameDisplay();
-    updateHandleDisplay();
-    updateAnimationClasses();
-    updateEffectClasses();
+    updateDisplayTexts();
+}
+
+function initializeAudio() {
+    // Créer l'élément audio s'il n'existe pas
+    if (!backgroundMusic) {
+        const audio = document.createElement('audio');
+        audio.id = 'background-music';
+        audio.loop = true;
+        audio.preload = 'auto';
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        
+        // Mettre à jour la variable globale
+        window.backgroundMusic = audio;
+    }
+    
+    // Configurer l'audio avec les données sauvegardées
+    if (backgroundMusic && profileData.music.url) {
+        try {
+            backgroundMusic.src = profileData.music.url;
+            backgroundMusic.volume = profileData.music.volume / 100;
+            backgroundMusic.load();
+            console.log('Audio initialisé avec succès');
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation de l\'audio:', error);
+        }
+    }
 }
 
 function setupEventListeners() {
@@ -220,6 +249,250 @@ function setupEventListeners() {
     if (profilePreview) {
         profilePreview.addEventListener('mouseenter', handleProfileZoom);
         profilePreview.addEventListener('mouseleave', resetProfileZoom);
+    }
+
+    // Gestionnaire pour la bordure de photo
+    document.getElementById('photo-border').addEventListener('change', function() {
+        const borderStyle = this.value;
+        const profilePhoto = document.getElementById('profile-photo');
+        
+        // Supprimer toutes les classes de bordure
+        profilePhoto.classList.remove('border-none', 'border-solid', 'border-gradient', 'border-glow');
+        
+        // Ajouter la nouvelle classe
+        if (borderStyle !== 'none') {
+            profilePhoto.classList.add(`border-${borderStyle}`);
+        }
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('photoBorder', borderStyle);
+    });
+
+    // Gestionnaires pour les réseaux sociaux
+    const socialInputs = ['discord-url', 'tiktok-url', 'gmail-url', 'whatsapp-url'];
+    const socialButtons = ['discord-btn', 'tiktok-btn', 'gmail-btn', 'whatsapp-btn'];
+    
+    socialInputs.forEach((inputId, index) => {
+        const input = document.getElementById(inputId);
+        const button = document.getElementById(socialButtons[index]);
+        
+        input.addEventListener('input', function() {
+            const url = this.value.trim();
+            
+            if (url) {
+                button.style.display = 'flex';
+                button.style.visibility = 'visible';
+                button.style.opacity = '1';
+                
+                // Formater l'URL selon le type
+                let formattedUrl = url;
+                if (inputId === 'gmail-url' && !url.startsWith('mailto:')) {
+                    formattedUrl = `mailto:${url}`;
+                } else if (inputId === 'whatsapp-url' && !url.startsWith('https://wa.me/')) {
+                    // Nettoyer le numéro de téléphone
+                    const phoneNumber = url.replace(/[^\d+]/g, '');
+                    formattedUrl = `https://wa.me/${phoneNumber}`;
+                }
+                
+                button.href = formattedUrl;
+            } else {
+                button.style.display = 'none';
+                button.style.visibility = 'hidden';
+                button.style.opacity = '0';
+            }
+            
+            // Sauvegarder les URLs
+            saveSocialUrls();
+        });
+    });
+
+    // Gestionnaire pour le style des boutons sociaux
+    document.getElementById('social-buttons-style').addEventListener('change', function() {
+        const style = this.value;
+        const socialButtons = document.getElementById('social-buttons');
+        
+        // Supprimer tous les styles
+        socialButtons.classList.remove('style-default', 'style-rounded', 'style-square', 'style-glow', 'style-minimal');
+        
+        // Ajouter le nouveau style
+        if (style !== 'default') {
+            socialButtons.classList.add(`style-${style}`);
+        }
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('socialButtonsStyle', style);
+    });
+
+    // Fonction pour sauvegarder les URLs des réseaux sociaux
+    function saveSocialUrls() {
+        const urls = {};
+        socialInputs.forEach(inputId => {
+            urls[inputId] = document.getElementById(inputId).value;
+        });
+        localStorage.setItem('socialUrls', JSON.stringify(urls));
+    }
+
+    // Fonction pour charger les URLs des réseaux sociaux
+    function loadSocialUrls() {
+        const urls = JSON.parse(localStorage.getItem('socialUrls') || '{}');
+        socialInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(socialButtons[socialInputs.indexOf(inputId)]);
+            
+            if (urls[inputId]) {
+                input.value = urls[inputId];
+                button.style.display = 'flex';
+                button.style.visibility = 'visible';
+                button.style.opacity = '1';
+                
+                // Formater l'URL
+                let formattedUrl = urls[inputId];
+                if (inputId === 'gmail-url' && !urls[inputId].startsWith('mailto:')) {
+                    formattedUrl = `mailto:${urls[inputId]}`;
+                } else if (inputId === 'whatsapp-url' && !urls[inputId].startsWith('https://wa.me/')) {
+                    const phoneNumber = urls[inputId].replace(/[^\d+]/g, '');
+                    formattedUrl = `https://wa.me/${phoneNumber}`;
+                }
+                
+                button.href = formattedUrl;
+            } else {
+                button.style.display = 'none';
+                button.style.visibility = 'hidden';
+                button.style.opacity = '0';
+            }
+        });
+    }
+
+    // Fonction pour charger les préférences de bordure et style
+    function loadPhotoAndSocialPreferences() {
+        // Charger la bordure de photo
+        const savedBorder = localStorage.getItem('photoBorder');
+        if (savedBorder) {
+            document.getElementById('photo-border').value = savedBorder;
+            const profilePhoto = document.getElementById('profile-photo');
+            profilePhoto.classList.remove('border-none', 'border-solid', 'border-gradient', 'border-glow');
+            if (savedBorder !== 'none') {
+                profilePhoto.classList.add(`border-${savedBorder}`);
+            }
+        }
+        
+        // Charger le style des boutons sociaux
+        const savedStyle = localStorage.getItem('socialButtonsStyle');
+        if (savedStyle) {
+            document.getElementById('social-buttons-style').value = savedStyle;
+            const socialButtons = document.getElementById('social-buttons');
+            socialButtons.classList.remove('style-default', 'style-rounded', 'style-square', 'style-glow', 'style-minimal');
+            if (savedStyle !== 'default') {
+                socialButtons.classList.add(`style-${savedStyle}`);
+            }
+        }
+    }
+
+    // Gestionnaires pour la personnalisation de l'interface
+    document.getElementById('interface-font').addEventListener('change', function() {
+        const font = this.value;
+        const body = document.body;
+        
+        // Supprimer toutes les classes de police
+        body.classList.remove('font-roboto', 'font-orbitron', 'font-poppins', 'font-montserrat', 
+                             'font-opensans', 'font-lato', 'font-raleway', 'font-ubuntu', 
+                             'font-nunito', 'font-quicksand');
+        
+        // Ajouter la nouvelle classe de police
+        if (font !== 'Roboto') {
+            body.classList.add(`font-${font.toLowerCase().replace(' ', '')}`);
+        }
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('interfaceFont', font);
+    });
+
+    document.getElementById('menu-style').addEventListener('change', function() {
+        const style = this.value;
+        const controlPanel = document.querySelector('.control-panel');
+        
+        // Supprimer tous les styles de menu
+        controlPanel.classList.remove('menu-style-default', 'menu-style-glass', 'menu-style-neon', 
+                                     'menu-style-gradient', 'menu-style-minimal', 'menu-style-dark', 
+                                     'menu-style-light', 'menu-style-rounded', 'menu-style-sharp');
+        
+        // Ajouter le nouveau style
+        if (style !== 'default') {
+            controlPanel.classList.add(`menu-style-${style}`);
+        }
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('menuStyle', style);
+    });
+
+    document.getElementById('accent-color').addEventListener('change', function() {
+        const color = this.value;
+        
+        // Mettre à jour la variable CSS
+        document.documentElement.style.setProperty('--accent-color', color);
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('accentColor', color);
+    });
+
+    document.getElementById('menu-opacity').addEventListener('input', function() {
+        const opacity = this.value;
+        const display = document.getElementById('menu-opacity-display');
+        
+        // Mettre à jour l'affichage
+        display.textContent = opacity + '%';
+        
+        // Appliquer l'opacité au panneau de contrôle
+        const controlPanel = document.querySelector('.control-panel');
+        controlPanel.style.opacity = opacity / 100;
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('menuOpacity', opacity);
+    });
+
+    // Fonction pour charger les préférences d'interface
+    function loadInterfacePreferences() {
+        // Charger la police
+        const savedFont = localStorage.getItem('interfaceFont');
+        if (savedFont) {
+            document.getElementById('interface-font').value = savedFont;
+            const body = document.body;
+            body.classList.remove('font-roboto', 'font-orbitron', 'font-poppins', 'font-montserrat', 
+                                 'font-opensans', 'font-lato', 'font-raleway', 'font-ubuntu', 
+                                 'font-nunito', 'font-quicksand');
+            if (savedFont !== 'Roboto') {
+                body.classList.add(`font-${savedFont.toLowerCase().replace(' ', '')}`);
+            }
+        }
+        
+        // Charger le style de menu
+        const savedMenuStyle = localStorage.getItem('menuStyle');
+        if (savedMenuStyle) {
+            document.getElementById('menu-style').value = savedMenuStyle;
+            const controlPanel = document.querySelector('.control-panel');
+            controlPanel.classList.remove('menu-style-default', 'menu-style-glass', 'menu-style-neon', 
+                                         'menu-style-gradient', 'menu-style-minimal', 'menu-style-dark', 
+                                         'menu-style-light', 'menu-style-rounded', 'menu-style-sharp');
+            if (savedMenuStyle !== 'default') {
+                controlPanel.classList.add(`menu-style-${savedMenuStyle}`);
+            }
+        }
+        
+        // Charger la couleur d'accent
+        const savedAccentColor = localStorage.getItem('accentColor');
+        if (savedAccentColor) {
+            document.getElementById('accent-color').value = savedAccentColor;
+            document.documentElement.style.setProperty('--accent-color', savedAccentColor);
+        }
+        
+        // Charger l'opacité du menu
+        const savedOpacity = localStorage.getItem('menuOpacity');
+        if (savedOpacity) {
+            document.getElementById('menu-opacity').value = savedOpacity;
+            document.getElementById('menu-opacity-display').textContent = savedOpacity + '%';
+            const controlPanel = document.querySelector('.control-panel');
+            controlPanel.style.opacity = savedOpacity / 100;
+        }
     }
 }
 
@@ -586,41 +859,115 @@ function handleVideoUpload(event) {
 function handleMusicUpload(event) {
     const file = event.target.files[0];
     if (file) {
+        // Vérifier le type de fichier
+        if (!file.type.startsWith('audio/')) {
+            alert('Veuillez sélectionner un fichier audio valide.');
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = function(e) {
-            profileData.music.url = e.target.result;
-            document.getElementById('music-url').value = e.target.result;
-            updateMusicUrl();
+            try {
+                profileData.music.url = e.target.result;
+                document.getElementById('music-url').value = e.target.result;
+                
+                // Mettre à jour l'élément audio existant
+                if (backgroundMusic) {
+                    backgroundMusic.src = profileData.music.url;
+                    backgroundMusic.load(); // Recharger l'audio
+                }
+                
+                // Sauvegarder les données
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                
+                console.log('Musique chargée avec succès');
+            } catch (error) {
+                console.error('Erreur lors du chargement de la musique:', error);
+                alert('Erreur lors du chargement de la musique. Veuillez réessayer.');
+            }
         };
+        
+        reader.onerror = function() {
+            console.error('Erreur lors de la lecture du fichier');
+            alert('Erreur lors de la lecture du fichier audio.');
+        };
+        
         reader.readAsDataURL(file);
     }
 }
 
 function updateMusicUrl() {
-    profileData.music.url = document.getElementById('music-url').value;
-    if (backgroundMusic) {
-        backgroundMusic.src = profileData.music.url;
+    const url = document.getElementById('music-url').value.trim();
+    if (url) {
+        try {
+            profileData.music.url = url;
+            
+            // Mettre à jour l'élément audio existant
+            if (backgroundMusic) {
+                backgroundMusic.src = profileData.music.url;
+                backgroundMusic.load(); // Recharger l'audio
+            }
+            
+            // Sauvegarder les données
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            
+            console.log('URL de musique mise à jour');
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour de l\'URL:', error);
+        }
     }
 }
 
 function updateMusicVolume() {
-    profileData.music.volume = document.getElementById('music-volume').value;
-    if (backgroundMusic) {
-        backgroundMusic.volume = profileData.music.volume / 100;
+    const volume = parseInt(document.getElementById('music-volume').value);
+    if (!isNaN(volume) && volume >= 0 && volume <= 100) {
+        profileData.music.volume = volume;
+        
+        if (backgroundMusic) {
+            backgroundMusic.volume = volume / 100;
+        }
+        
+        // Sauvegarder les données
+        localStorage.setItem('profileData', JSON.stringify(profileData));
     }
 }
 
 function playMusic() {
     if (backgroundMusic && profileData.music.url) {
-        backgroundMusic.play();
-        profileData.music.playing = true;
+        try {
+            // S'assurer que le volume est correct
+            backgroundMusic.volume = profileData.music.volume / 100;
+            
+            // Jouer la musique
+            const playPromise = backgroundMusic.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    profileData.music.playing = true;
+                    console.log('Musique démarrée');
+                }).catch(error => {
+                    console.error('Erreur lors du démarrage de la musique:', error);
+                    // Ne pas afficher d'alerte pour les erreurs de politique de navigateur
+                    if (!error.message.includes('user gesture')) {
+                        alert('Impossible de démarrer la musique. Cliquez sur la page pour autoriser la lecture audio.');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Erreur lors de la lecture de la musique:', error);
+        }
     }
 }
 
 function pauseMusic() {
     if (backgroundMusic) {
-        backgroundMusic.pause();
-        profileData.music.playing = false;
+        try {
+            backgroundMusic.pause();
+            profileData.music.playing = false;
+            console.log('Musique mise en pause');
+        } catch (error) {
+            console.error('Erreur lors de la pause de la musique:', error);
+        }
     }
 }
 
@@ -788,12 +1135,63 @@ function updateEffectClasses() {
         // Supprimer toutes les classes d'effets
         profilePreview.classList.remove('particles', 'distortion', 'loading', 'mirror', 'dark-mode');
         
-        // Ajouter les nouvelles classes d'effets
-        Object.keys(profileData.effects).forEach(effect => {
-            if (profileData.effects[effect]) {
-                profilePreview.classList.add(effect);
-            }
-        });
+        // Supprimer les éléments d'effets existants
+        const existingLoading = profilePreview.querySelector('.loading-animation');
+        if (existingLoading) existingLoading.remove();
+        
+        // Réinitialiser les styles
+        profilePreview.style.filter = 'none';
+        profilePreview.style.transform = 'none';
+        
+        // Appliquer les effets
+        if (profileData.effects.particles) {
+            profilePreview.classList.add('particles');
+            createParticles();
+        } else {
+            removeParticles();
+        }
+        
+        if (profileData.effects.distortion) {
+            profilePreview.classList.add('distortion');
+            profilePreview.style.filter = 'contrast(1.3) saturate(1.8) brightness(1.1)';
+        }
+        
+        if (profileData.effects.loading) {
+            profilePreview.classList.add('loading');
+            const loadingAnimation = document.createElement('div');
+            loadingAnimation.className = 'loading-animation';
+            loadingAnimation.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 60px;
+                height: 60px;
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-top: 4px solid #4ecdc4;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                z-index: 1000;
+            `;
+            profilePreview.appendChild(loadingAnimation);
+        }
+        
+        if (profileData.effects.mirror) {
+            profilePreview.classList.add('mirror');
+            profilePreview.style.transform = 'scaleX(-1)';
+        }
+        
+        if (profileData.effects.darkMode) {
+            profilePreview.classList.add('dark-mode');
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        
+        // Forcer la mise à jour de l'affichage
+        profilePreview.style.display = 'none';
+        profilePreview.offsetHeight; // Force reflow
+        profilePreview.style.display = 'block';
     }
 }
 
@@ -811,16 +1209,33 @@ function createParticles() {
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
     particlesContainer.id = 'particles-container';
+    particlesContainer.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 5;
+    `;
     
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 30; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = Math.random() * 100 + '%';
-        particle.style.width = Math.random() * 4 + 2 + 'px';
-        particle.style.height = particle.style.width;
-        particle.style.animationDelay = Math.random() * 6 + 's';
-        particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+        particle.style.cssText = `
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            width: ${Math.random() * 6 + 4}px;
+            height: ${Math.random() * 6 + 4}px;
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 100}%;
+            animation-delay: ${Math.random() * 8}s;
+            animation-duration: ${Math.random() * 4 + 6}s;
+            animation-name: particleFloat;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;
+        `;
         
         particlesContainer.appendChild(particle);
     }
@@ -982,12 +1397,14 @@ function generateCSSCode() {
 
 .profile-container {
     width: 400px;
-    height: 500px;
+    height: 711px; /* 400px * (16/9) pour correspondre à aspect-ratio: 9/16 */
     position: relative;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     ${getAnimationCSS()}
+    ${profileData.effects.mirror ? 'transform: scaleX(-1);' : ''}
+    ${profileData.effects.distortion ? 'filter: contrast(1.2) saturate(1.5);' : ''}
 }
 
 .profile-background {
@@ -1123,6 +1540,44 @@ function generateFullPageHTML() {
     // Positions par défaut si pas sauvegardées
     const photoPosition = positions['photo'] || { x: 30, y: 30 };
     const contentPosition = positions['content'] || { x: 30, y: 370 };
+    const socialPosition = positions['social'] || { x: 30, y: 120 };
+
+    // Récupérer les URLs des réseaux sociaux
+    const socialUrls = JSON.parse(localStorage.getItem('socialUrls') || '{}');
+    const savedBorder = localStorage.getItem('photoBorder') || 'none';
+    const savedStyle = localStorage.getItem('socialButtonsStyle') || 'default';
+
+    // Générer les boutons sociaux
+    let socialButtonsHTML = '';
+    const socialData = [
+        { id: 'discord', url: socialUrls['discord-url'], color: '#5865F2' },
+        { id: 'tiktok', url: socialUrls['tiktok-url'], color: '#000000' },
+        { id: 'gmail', url: socialUrls['gmail-url'], color: '#EA4335' },
+        { id: 'whatsapp', url: socialUrls['whatsapp-url'], color: '#25D366' }
+    ];
+
+    socialData.forEach(social => {
+        if (social.url) {
+            let formattedUrl = social.url;
+            if (social.id === 'gmail' && !social.url.startsWith('mailto:')) {
+                formattedUrl = `mailto:${social.url}`;
+            } else if (social.id === 'whatsapp' && !social.url.startsWith('https://wa.me/')) {
+                const phoneNumber = social.url.replace(/[^\d+]/g, '');
+                formattedUrl = `https://wa.me/${phoneNumber}`;
+            }
+
+            const svgIcon = getSocialIcon(social.id);
+            socialButtonsHTML += `
+                <a href="${formattedUrl}" class="social-btn ${social.id}-btn" target="_blank" style="background: ${social.color};">
+                    ${svgIcon}
+                </a>
+            `;
+        }
+    });
+
+    // CSS pour les bordures de photo
+    const borderCSS = getBorderCSS(savedBorder);
+    const socialStyleCSS = getSocialStyleCSS(savedStyle);
 
     return `<!DOCTYPE html>
 <html lang="fr">
@@ -1145,9 +1600,48 @@ function generateFullPageHTML() {
             ${profileData.effects.darkMode ? 'filter: invert(1) hue-rotate(180deg);' : ''}
         }
         
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .loading-hint {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
         .profile-container {
             width: 400px;
-            height: 500px;
+            height: 711px;
             position: relative;
             border-radius: 20px;
             overflow: hidden;
@@ -1168,6 +1662,15 @@ function generateFullPageHTML() {
             transition: all 0.3s ease;
         }
         
+        .profile-background video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
         .profile-photo-preview {
             position: absolute;
             top: ${photoPosition.y}px;
@@ -1186,9 +1689,37 @@ function generateFullPageHTML() {
             background-image: ${profileData.profilePhoto ? `url('${profileData.profilePhoto}')` : 'url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiM2NjY2NjYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAxMmMyLjIxIDAgNC0xLjc5IDQtNHMtMS43OS00LTQtNC00IDEuNzktNCA0IDEuNzkgNCA0IDR6bTAgMmMtMi42NyAwLTggMS4zNC04IDR2MmgxNnYtMmMwLTIuNjYtNS4zMy00LTgtNHoiLz4KPC9zdmc+Cjwvc3ZnPgo=")'};
             background-size: cover;
             background-position: center;
-            border: 3px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
+            ${borderCSS}
+        }
+        
+        .social-buttons {
+            position: absolute;
+            top: ${socialPosition.y}px;
+            left: ${socialPosition.x}px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+            transition: all 0.3s ease;
+            ${socialStyleCSS}
+        }
+        
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .social-btn:hover {
+            transform: scale(1.1);
         }
         
         .profile-content {
@@ -1253,14 +1784,44 @@ function generateFullPageHTML() {
             100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
         ` : ''}
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <!-- Écran de chargement -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Chargement du profil...</div>
+            <div class="loading-hint">Cliquez n'importe où pour commencer</div>
+        </div>
+    </div>
+
+    <!-- Musique de fond -->
+    ${profileData.music.url ? `<audio id="background-music" loop preload="auto">
+        <source src="${profileData.music.url}" type="audio/mpeg">
+        <source src="${profileData.music.url}" type="audio/ogg">
+        <source src="${profileData.music.url}" type="audio/wav">
+    </audio>` : ''}
+
     <div class="profile-container">
-        <div class="profile-background"></div>
+        <div class="profile-background">
+            ${profileData.background.type === 'video' && profileData.background.video ? `
+            <video autoplay loop muted playsinline>
+                <source src="${profileData.background.video}" type="video/mp4">
+                <source src="${profileData.background.video}" type="video/webm">
+                <source src="${profileData.background.video}" type="video/ogg">
+            </video>
+            ` : ''}
+        </div>
         <div class="profile-photo-preview">
             <div class="profile-photo"></div>
         </div>
+        ${socialButtonsHTML ? `<div class="social-buttons">${socialButtonsHTML}</div>` : ''}
         <div class="profile-content">
             <h2 class="profile-username">${profileData.username}</h2>
             <p class="profile-handle">@${profileData.handle}</p>
@@ -1270,6 +1831,32 @@ function generateFullPageHTML() {
     </div>
     
     <script>
+        // Gestion de l'écran de chargement
+        const loadingScreen = document.getElementById('loading-screen');
+        const backgroundMusic = document.getElementById('background-music');
+        
+        // Fonction pour masquer l'écran de chargement
+        function hideLoadingScreen() {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+        
+        // Masquer l'écran de chargement au clic
+        document.addEventListener('click', function() {
+            hideLoadingScreen();
+            
+            // Démarrer la musique si elle existe
+            if (backgroundMusic) {
+                backgroundMusic.volume = ${profileData.music.volume} / 100;
+                backgroundMusic.play().catch(e => console.log('Musique non démarrée:', e));
+            }
+        }, { once: true });
+        
+        // Masquer automatiquement après 3 secondes
+        setTimeout(hideLoadingScreen, 3000);
+        
         // Animation 3D au survol
         const profileContainer = document.querySelector('.profile-container');
         
@@ -1338,16 +1925,12 @@ function generateFullPageHTML() {
         });
         ` : ''}
         
-        // Musique de fond
-        if ('${profileData.music.url}') {
-            const audio = new Audio('${profileData.music.url}');
-            audio.loop = true;
-            audio.volume = ${profileData.music.volume} / 100;
-            
-            document.addEventListener('click', function() {
-                audio.play();
-            }, { once: true });
+        // Curseur personnalisé
+        if (${profileData.cursor.enabled}) {
+            document.body.style.cursor = '${profileData.cursor.style}';
         }
+        
+        console.log('Profil personnalisé chargé !');
     </script>
 </body>
 </html>`;
@@ -1408,12 +1991,13 @@ function getEffectCSS() {
         css += `
         .particle {
             position: absolute;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.6);
             border-radius: 50%;
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
             pointer-events: none;
-            animation: particleFloat 6s ease-in-out infinite;
+            z-index: 5;
+            animation: particleFloat 8s ease-in-out infinite;
         }
         
         @keyframes particleFloat {
@@ -1424,7 +2008,7 @@ function getEffectCSS() {
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { 
-                transform: translateY(-100px) translateX(50px);
+                transform: translateY(-150px) translateX(100px);
                 opacity: 0;
             }
         }`;
@@ -1433,7 +2017,7 @@ function getEffectCSS() {
     if (profileData.effects.distortion) {
         css += `
         .profile-container {
-            filter: contrast(1.2) saturate(1.5);
+            filter: contrast(1.3) saturate(1.8) brightness(1.1);
         }`;
     }
     
@@ -1448,6 +2032,28 @@ function getEffectCSS() {
         css += `
         body {
             filter: invert(1) hue-rotate(180deg);
+        }`;
+    }
+    
+    if (profileData.effects.loading) {
+        css += `
+        .loading-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }`;
     }
     
@@ -2043,6 +2649,51 @@ function resetProfile() {
         
         alert('Profil réinitialisé avec succès !');
     }
+}
+
+// Fonction pour obtenir l'icône SVG d'un réseau social
+function getSocialIcon(socialId) {
+    const icons = {
+        discord: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+        </svg>`,
+        tiktok: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+        </svg>`,
+        gmail: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-.904.732-1.636 1.636-1.636h.819L12 10.183l9.545-6.362h.819A1.636 1.636 0 0 1 24 5.457z"/>
+        </svg>`,
+        whatsapp: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+        </svg>`
+    };
+    
+    return icons[socialId] || '';
+}
+
+// Fonction pour obtenir le CSS de bordure
+function getBorderCSS(borderStyle) {
+    const borderStyles = {
+        none: 'border: none;',
+        // solid: 'border: 3px solid #4ecdc4;',
+        gradient: 'border: 3px solid; border-image: linear-gradient(45deg, #4ecdc4, #45b7d1, #96ceb4) 1;',
+        glow: 'box-shadow: 0 0 20px rgba(78, 205, 196, 0.6), 0 4px 15px rgba(0, 0, 0, 0.3);'
+    };
+    
+    return borderStyles[borderStyle] || borderStyles.none;
+}
+
+// Fonction pour obtenir le CSS de style des boutons sociaux
+function getSocialStyleCSS(style) {
+    const styleCSS = {
+        default: '',
+        rounded: '.social-btn { border-radius: 50%; }',
+        square: '.social-btn { border-radius: 8px; }',
+        glow: '.social-btn { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); } .social-btn:hover { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }',
+        minimal: '.social-btn { background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); } .social-btn:hover { background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.3); }'
+    };
+    
+    return styleCSS[style] || styleCSS.default;
 }
 
 console.log('Script de personnalisation de profil chargé avec succès !');      
