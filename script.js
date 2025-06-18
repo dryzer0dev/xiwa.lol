@@ -729,6 +729,9 @@ function handleBackgroundTypeChange() {
     const type = document.getElementById('background-type').value;
     profileData.background.type = type;
     
+    // Sauvegarder dans localStorage
+    localStorage.setItem('profileData', JSON.stringify(profileData));
+    
     // Afficher/masquer les options appropriées
     const colorSection = document.getElementById('color-section');
     const imageSection = document.getElementById('image-section');
@@ -773,6 +776,8 @@ function updateBackgroundVideo() {
     const videoUrl = document.getElementById('background-video-url').value;
     if (videoUrl) {
         profileData.background.video = videoUrl;
+        // Sauvegarder dans localStorage
+        localStorage.setItem('profileData', JSON.stringify(profileData));
     }
 }
 
@@ -867,6 +872,8 @@ function handleVideoUpload(event) {
         reader.onload = function(e) {
             profileData.background.video = e.target.result;
             document.getElementById('background-video-url').value = e.target.result;
+            // Sauvegarder dans localStorage
+            localStorage.setItem('profileData', JSON.stringify(profileData));
         };
         reader.readAsDataURL(file);
     }
@@ -2695,5 +2702,19 @@ function getSocialStyleCSS(style) {
     
     return styleCSS[style] || styleCSS.default;
 }
+
+// Fonction de débogage pour vérifier les données
+function debugProfileData() {
+    console.log('=== DONNÉES DU PROFIL ===');
+    console.log('Type de fond:', profileData.background.type);
+    console.log('Vidéo de fond:', profileData.background.video);
+    console.log('Données complètes:', profileData);
+    
+    const savedData = localStorage.getItem('profileData');
+    console.log('Données sauvegardées:', savedData ? JSON.parse(savedData) : 'Aucune');
+}
+
+// Ajouter au global pour pouvoir l'appeler depuis la console
+window.debugProfileData = debugProfileData;
 
 console.log('Script de personnalisation de profil chargé avec succès !');      
