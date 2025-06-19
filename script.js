@@ -1334,18 +1334,15 @@ function showCodeModal() {
     // Générer le code HTML complet de la page
     const fullPageHTML = generateFullPageHTML();
     
+    // Afficher le code HTML exactement comme il sera dans la page complète (y compris la vidéo de fond de la page)
+    document.getElementById('html-output').textContent = fullPageHTML;
+
     // Extraire les différentes parties du code
-    const htmlMatch = fullPageHTML.match(/<html[^>]*>([\s\S]*)<\/html>/i);
     const headMatch = fullPageHTML.match(/<head>([\s\S]*)<\/head>/i);
     const bodyMatch = fullPageHTML.match(/<body>([\s\S]*)<\/body>/i);
     
-    let htmlCode = '';
     let cssCode = '';
     let jsCode = '';
-    
-    if (htmlMatch) {
-        htmlCode = fullPageHTML;
-    }
     
     if (headMatch) {
         // Extraire le CSS du head
@@ -1363,8 +1360,7 @@ function showCodeModal() {
         }
     }
     
-    // Afficher le code
-    document.getElementById('html-output').textContent = htmlCode;
+    // Afficher le code CSS et JS
     document.getElementById('css-output').textContent = cssCode;
     document.getElementById('js-output').textContent = jsCode;
     
@@ -1866,6 +1862,13 @@ function generateFullPageHTML() {
     </style>
 </head>
 <body>
+    ${profileData.pageBackground.type === 'video' && profileData.pageBackground.video ? `
+    <video autoplay loop muted playsinline style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: -2;">
+        <source src="${profileData.pageBackground.video}" type="video/mp4">
+        <source src="${profileData.pageBackground.video}" type="video/webm">
+        <source src="${profileData.pageBackground.video}" type="video/ogg">
+    </video>
+    ` : ''}
     <!-- Écran de chargement -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-content">
