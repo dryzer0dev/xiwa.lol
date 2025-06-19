@@ -55,8 +55,7 @@ let profileData = {
     photoShape: 'circle',
     photoSize: 80,
     description: 'Votre description personnalisée avec emojis et GIFs ! 🎉✨',
-    positions: {},
-    profilePadding: 12,
+    positions: {}
 };
 
 // Éléments DOM
@@ -96,7 +95,6 @@ function initializeApp() {
     updatePreview();
     updateDisplayValues();
     updateDisplayTexts();
-    updateProfilePaddingPreview();
 }
 
 // Fonction pour charger les données du profil depuis localStorage
@@ -111,25 +109,9 @@ function loadProfileData() {
             
             // Mettre à jour l'interface avec les données chargées
             updateInterfaceWithLoadedData();
-            
-            // Charger le padding sauvegardé
-            const savedPadding = localStorage.getItem('profilePadding');
-            if (savedPadding !== null) {
-                profileData.profilePadding = parseInt(savedPadding);
-                document.getElementById('profile-padding').value = savedPadding;
-                document.documentElement.style.setProperty('--profile-padding', savedPadding + 'px');
-                document.getElementById('profile-padding-display').textContent = savedPadding + 'px';
-            } else {
-                document.documentElement.style.setProperty('--profile-padding', profileData.profilePadding + 'px');
-                document.getElementById('profile-padding-display').textContent = profileData.profilePadding + 'px';
-            }
         } catch (error) {
             console.error('Erreur lors du chargement des données:', error);
         }
-    } else {
-        // Valeur par défaut
-        document.documentElement.style.setProperty('--profile-padding', profileData.profilePadding + 'px');
-        document.getElementById('profile-padding-display').textContent = profileData.profilePadding + 'px';
     }
 }
 
@@ -408,48 +390,260 @@ function setupEventListeners() {
         // Sauvegarder la préférence
         localStorage.setItem('socialButtonsStyle', style);
     });
-}
 
-// --- DÉBUT : Fonctions réseaux sociaux accessibles globalement ---
-function saveSocialUrls() {
-    const urls = {};
-    const socialInputs = ['discord-url', 'tiktok-url', 'gmail-url', 'whatsapp-url'];
-    socialInputs.forEach(inputId => {
-        urls[inputId] = document.getElementById(inputId).value;
-    });
-    localStorage.setItem('socialUrls', JSON.stringify(urls));
-}
+    // Fonction pour sauvegarder les URLs des réseaux sociaux
+    function saveSocialUrls() {
+        const urls = {};
+        socialInputs.forEach(inputId => {
+            urls[inputId] = document.getElementById(inputId).value;
+        });
+        localStorage.setItem('socialUrls', JSON.stringify(urls));
+    }
 
-function loadSocialUrls() {
-    const socialInputs = ['discord-url', 'tiktok-url', 'gmail-url', 'whatsapp-url'];
-    const socialButtons = ['discord-btn', 'tiktok-btn', 'gmail-btn', 'whatsapp-btn'];
-    const urls = JSON.parse(localStorage.getItem('socialUrls') || '{}');
-    socialInputs.forEach((inputId, index) => {
-        const input = document.getElementById(inputId);
-        const button = document.getElementById(socialButtons[index]);
-        if (urls[inputId]) {
-            input.value = urls[inputId];
-            button.style.display = 'flex';
-            button.style.visibility = 'visible';
-            button.style.opacity = '1';
-            // Formater l'URL
-            let formattedUrl = urls[inputId];
-            if (inputId === 'gmail-url' && !urls[inputId].startsWith('mailto:')) {
-                formattedUrl = `mailto:${urls[inputId]}`;
-            } else if (inputId === 'whatsapp-url' && !urls[inputId].startsWith('https://wa.me/')) {
-                const phoneNumber = urls[inputId].replace(/[^\d+]/g, '');
-                formattedUrl = `https://wa.me/${phoneNumber}`;
+    // Fonction pour charger les URLs des réseaux sociaux
+    function loadSocialUrls() {
+        const urls = JSON.parse(localStorage.getItem('socialUrls') || '{}');
+        socialInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(socialButtons[socialInputs.indexOf(inputId)]);
+            
+            if (urls[inputId]) {
+                input.value = urls[inputId];
+                button.style.display = 'flex';
+                button.style.visibility = 'visible';
+                button.style.opacity = '1';
+                
+                // Formater l'URL
+                let formattedUrl = urls[inputId];
+                if (inputId === 'gmail-url' && !urls[inputId].startsWith('mailto:')) {
+                    formattedUrl = `mailto:${urls[inputId]}`;
+                } else if (inputId === 'whatsapp-url' && !urls[inputId].startsWith('https://wa.me/')) {
+                    const phoneNumber = urls[inputId].replace(/[^\d+]/g, '');
+                    formattedUrl = `https://wa.me/${phoneNumber}`;
+                }
+                
+                button.href = formattedUrl;
+            } else {
+                button.style.display = 'none';
+                button.style.visibility = 'hidden';
+                button.style.opacity = '0';
             }
-            button.href = formattedUrl;
-        } else {
-            button.style.display = 'none';
-            button.style.visibility = 'hidden';
-            button.style.opacity = '0';
-        }
-    });
-}
-// --- FIN : Fonctions réseaux sociaux accessibles globalement ---
+        });
+    }
 
+    // Fonction pour charger les préférences de bordure et style
+    function loadPhotoAndSocialPreferences() {
+        // Charger la bordure de photo
+        const savedBorder = localStorage.getItem('photoBorder');
+        if (savedBorder) {
+            document.getElementById('photo-border').value = savedBorder;
+            const profilePhoto = document.getElementById('profile-photo');
+            profilePhoto.classList.remove('border-none', 'border-solid', 'border-gradient', 'border-glow');
+            if (savedBorder !== 'none') {
+                profilePhoto.classList.add(`border-${savedBorder}`);
+            }
+        }
+        
+        // Charger le style des boutons sociaux
+        const savedStyle = localStorage.getItem('socialButtonsStyle');
+        if (savedStyle) {
+            document.getElementById('social-buttons-style').value = savedStyle;
+            const socialButtons = document.getElementById('social-buttons');
+            socialButtons.classList.remove('style-default', 'style-rounded', 'style-square', 'style-glow', 'style-minimal');
+            if (savedStyle !== 'default') {
+                socialButtons.classList.add(`style-${savedStyle}`);
+            }
+        }
+    }
+
+    // Gestionnaires pour la personnalisation de l'interface
+    document.getElementById('interface-font').addEventListener('change', function() {
+        const font = this.value;
+        const body = document.body;
+        
+        // Supprimer toutes les classes de police
+        body.classList.remove('font-roboto', 'font-orbitron', 'font-poppins', 'font-montserrat', 
+                             'font-opensans', 'font-lato', 'font-raleway', 'font-ubuntu', 
+                             'font-nunito', 'font-quicksand');
+        
+        // Ajouter la nouvelle classe de police
+        if (font !== 'Roboto') {
+            body.classList.add(`font-${font.toLowerCase().replace(' ', '')}`);
+        }
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('interfaceFont', font);
+    });
+
+    document.getElementById('menu-style').addEventListener('change', function() {
+        const style = this.value;
+        const controlPanel = document.querySelector('.control-panel');
+        
+        // Supprimer tous les styles de menu
+        controlPanel.classList.remove('menu-style-default', 'menu-style-glass', 'menu-style-neon', 
+                                     'menu-style-gradient', 'menu-style-minimal', 'menu-style-dark', 
+                                     'menu-style-light', 'menu-style-rounded', 'menu-style-sharp');
+        
+        // Ajouter le nouveau style
+        if (style !== 'default') {
+            controlPanel.classList.add(`menu-style-${style}`);
+        }
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('menuStyle', style);
+    });
+
+    document.getElementById('accent-color').addEventListener('change', function() {
+        const color = this.value;
+        
+        // Mettre à jour la variable CSS
+        document.documentElement.style.setProperty('--accent-color', color);
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('accentColor', color);
+    });
+
+    document.getElementById('menu-opacity').addEventListener('input', function() {
+        const opacity = this.value;
+        const display = document.getElementById('menu-opacity-display');
+        
+        // Mettre à jour l'affichage
+        display.textContent = opacity + '%';
+        
+        // Appliquer l'opacité au panneau de contrôle
+        const controlPanel = document.querySelector('.control-panel');
+        controlPanel.style.opacity = opacity / 100;
+        
+        // Sauvegarder la préférence
+        localStorage.setItem('menuOpacity', opacity);
+    });
+
+    // Fonction pour charger les préférences d'interface
+    function loadInterfacePreferences() {
+        // Charger la police
+        const savedFont = localStorage.getItem('interfaceFont');
+        if (savedFont) {
+            document.getElementById('interface-font').value = savedFont;
+            const body = document.body;
+            body.classList.remove('font-roboto', 'font-orbitron', 'font-poppins', 'font-montserrat', 
+                                 'font-opensans', 'font-lato', 'font-raleway', 'font-ubuntu', 
+                                 'font-nunito', 'font-quicksand');
+            if (savedFont !== 'Roboto') {
+                body.classList.add(`font-${savedFont.toLowerCase().replace(' ', '')}`);
+            }
+        }
+        
+        // Charger le style de menu
+        const savedMenuStyle = localStorage.getItem('menuStyle');
+        if (savedMenuStyle) {
+            document.getElementById('menu-style').value = savedMenuStyle;
+            const controlPanel = document.querySelector('.control-panel');
+            controlPanel.classList.remove('menu-style-default', 'menu-style-glass', 'menu-style-neon', 
+                                         'menu-style-gradient', 'menu-style-minimal', 'menu-style-dark', 
+                                         'menu-style-light', 'menu-style-rounded', 'menu-style-sharp');
+            if (savedMenuStyle !== 'default') {
+                controlPanel.classList.add(`menu-style-${savedMenuStyle}`);
+            }
+        }
+        
+        // Charger la couleur d'accent
+        const savedAccentColor = localStorage.getItem('accentColor');
+        if (savedAccentColor) {
+            document.getElementById('accent-color').value = savedAccentColor;
+            document.documentElement.style.setProperty('--accent-color', savedAccentColor);
+        }
+        
+        // Charger l'opacité du menu
+        const savedOpacity = localStorage.getItem('menuOpacity');
+        if (savedOpacity) {
+            document.getElementById('menu-opacity').value = savedOpacity;
+            document.getElementById('menu-opacity-display').textContent = savedOpacity + '%';
+            const controlPanel = document.querySelector('.control-panel');
+            controlPanel.style.opacity = savedOpacity / 100;
+        }
+    }
+}
+
+// Fonctions principales
+function enterEditor() {
+    welcomeScreen.classList.add('hidden');
+    editor.classList.remove('hidden');
+    document.body.classList.add('show-cursor');
+}
+
+function updatePreview() {
+    updatePageBackground();
+    updateBackground();
+    updateUsernameDisplay();
+    updateHandleDisplay();
+    updateAnimationClasses();
+    updateEffectClasses();
+    updateProfilePhotoDisplay();
+    updateDescriptionDisplay();
+}
+
+function updateDisplayValues() {
+    // Mettre à jour les valeurs affichées dans les inputs
+    document.getElementById('page-background-color').value = profileData.pageBackground.color;
+    document.getElementById('page-background-image-url').value = profileData.pageBackground.image;
+    document.getElementById('page-background-video-url').value = profileData.pageBackground.video;
+    document.getElementById('page-gradient-color1').value = profileData.pageBackground.gradient.color1;
+    document.getElementById('page-gradient-color2').value = profileData.pageBackground.gradient.color2;
+    document.getElementById('page-gradient-direction').value = profileData.pageBackground.gradient.direction;
+    document.getElementById('page-animation-style').value = profileData.pageBackground.animated;
+    
+    document.getElementById('background-color').value = profileData.background.color;
+    document.getElementById('background-image-url').value = profileData.background.image;
+    document.getElementById('background-video-url').value = profileData.background.video;
+    document.getElementById('gradient-color1').value = profileData.background.gradient.color1;
+    document.getElementById('gradient-color2').value = profileData.background.gradient.color2;
+    document.getElementById('gradient-direction').value = profileData.background.gradient.direction;
+    
+    document.getElementById('music-url').value = profileData.music.url;
+    document.getElementById('music-volume').value = profileData.music.volume;
+    
+    document.getElementById('username-input').value = profileData.username;
+    document.getElementById('handle-input').value = profileData.handle;
+    
+    document.getElementById('profile-description').value = profileData.description;
+    document.getElementById('photo-shape').value = profileData.photoShape;
+    document.getElementById('photo-size').value = profileData.photoSize;
+    
+    document.getElementById('username-effect').value = profileData.usernameEffect;
+    document.getElementById('animation-type').value = profileData.animation.type;
+    document.getElementById('animation-intensity').value = profileData.animation.intensity;
+    document.getElementById('zoom-effect').checked = profileData.zoom.enabled;
+    document.getElementById('zoom-level').value = profileData.zoom.level;
+    document.getElementById('background-opacity').value = profileData.opacity;
+    document.getElementById('custom-cursor').checked = profileData.cursor.enabled;
+    document.getElementById('cursor-style').value = profileData.cursor.style;
+    
+    document.getElementById('particles-effect').checked = profileData.effects.particles;
+    document.getElementById('distortion-effect').checked = profileData.effects.distortion;
+    document.getElementById('loading-animation').checked = profileData.effects.loading;
+    document.getElementById('mirror-effect').checked = profileData.effects.mirror;
+    document.getElementById('dark-mode-toggle').checked = profileData.effects.darkMode;
+    
+    // Mettre à jour les affichages
+    updateDisplayTexts();
+}
+
+function updateDisplayTexts() {
+    // Mettre à jour les textes d'affichage
+    const volumeDisplay = document.getElementById('volume-display');
+    const intensityDisplay = document.getElementById('intensity-display');
+    const zoomDisplay = document.getElementById('zoom-display');
+    const opacityDisplay = document.getElementById('opacity-display');
+    const photoSizeDisplay = document.getElementById('photo-size-display');
+    
+    if (volumeDisplay) volumeDisplay.textContent = profileData.music.volume + '%';
+    if (intensityDisplay) intensityDisplay.textContent = profileData.animation.intensity;
+    if (zoomDisplay) zoomDisplay.textContent = profileData.zoom.level + 'x';
+    if (opacityDisplay) opacityDisplay.textContent = profileData.opacity + '%';
+    if (photoSizeDisplay) photoSizeDisplay.textContent = profileData.photoSize + 'px';
+}
+
+// Fonctions de gestion des inputs
 function handlePageBackgroundTypeChange() {
     const type = document.getElementById('page-background-type').value;
     profileData.pageBackground.type = type;
@@ -1140,15 +1334,18 @@ function showCodeModal() {
     // Générer le code HTML complet de la page
     const fullPageHTML = generateFullPageHTML();
     
-    // Afficher le code HTML exactement comme il sera dans la page complète (y compris la vidéo de fond de la page)
-    document.getElementById('html-output').textContent = fullPageHTML;
-
     // Extraire les différentes parties du code
+    const htmlMatch = fullPageHTML.match(/<html[^>]*>([\s\S]*)<\/html>/i);
     const headMatch = fullPageHTML.match(/<head>([\s\S]*)<\/head>/i);
     const bodyMatch = fullPageHTML.match(/<body>([\s\S]*)<\/body>/i);
     
+    let htmlCode = '';
     let cssCode = '';
     let jsCode = '';
+    
+    if (htmlMatch) {
+        htmlCode = fullPageHTML;
+    }
     
     if (headMatch) {
         // Extraire le CSS du head
@@ -1166,7 +1363,8 @@ function showCodeModal() {
         }
     }
     
-    // Afficher le code CSS et JS
+    // Afficher le code
+    document.getElementById('html-output').textContent = htmlCode;
     document.getElementById('css-output').textContent = cssCode;
     document.getElementById('js-output').textContent = jsCode;
     
@@ -1506,9 +1704,7 @@ function generateFullPageHTML() {
         
         .profile-container {
             width: 400px;
-            min-height: 0;
-            padding-top: var(--profile-padding, 12px);
-            padding-bottom: var(--profile-padding, 12px);
+            height: 711px;
             position: relative;
             border-radius: 20px;
             overflow: hidden;
@@ -1670,14 +1866,6 @@ function generateFullPageHTML() {
     </style>
 </head>
 <body>
-    <style>:root{--profile-padding:${profileData.profilePadding}px;}</style>
-    ${profileData.pageBackground.type === 'video' && profileData.pageBackground.video ? `
-    <video autoplay loop muted playsinline style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: -2;">
-        <source src="${profileData.pageBackground.video}" type="video/mp4">
-        <source src="${profileData.pageBackground.video}" type="video/webm">
-        <source src="${profileData.pageBackground.video}" type="video/ogg">
-    </video>
-    ` : ''}
     <!-- Écran de chargement -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-content">
@@ -2486,8 +2674,7 @@ function resetProfile() {
             photoShape: 'circle',
             photoSize: 80,
             description: 'Votre description personnalisée avec emojis et GIFs ! 🎉✨',
-            positions: {},
-            profilePadding: 12,
+            positions: {}
         };
         
         // Réinitialiser tous les inputs
@@ -2598,20 +2785,4 @@ function debugProfileData() {
 // Ajouter au global pour pouvoir l'appeler depuis la console
 window.debugProfileData = debugProfileData;
 
-function updateProfilePaddingPreview() {
-    const preview = document.getElementById('profile-preview');
-    if (preview) {
-        preview.style.paddingTop = profileData.profilePadding + 'px';
-        preview.style.paddingBottom = profileData.profilePadding + 'px';
-    }
-}
-
-console.log('Script de personnalisation de profil chargé avec succès !');
-
-function enterEditor() {
-    const welcomeScreen = document.getElementById('welcome-screen');
-    const editor = document.getElementById('editor');
-    if (welcomeScreen) welcomeScreen.classList.add('hidden');
-    if (editor) editor.classList.remove('hidden');
-    document.body.classList.add('show-cursor');
-}
+console.log('Script de personnalisation de profil chargé avec succès !');      
