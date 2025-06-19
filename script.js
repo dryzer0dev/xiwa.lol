@@ -55,7 +55,8 @@ let profileData = {
     photoShape: 'circle',
     photoSize: 80,
     description: 'Votre description personnalisée avec emojis et GIFs ! 🎉✨',
-    positions: {}
+    positions: {},
+    profilePadding: 12,
 };
 
 // Éléments DOM
@@ -109,9 +110,25 @@ function loadProfileData() {
             
             // Mettre à jour l'interface avec les données chargées
             updateInterfaceWithLoadedData();
+            
+            // Charger le padding sauvegardé
+            const savedPadding = localStorage.getItem('profilePadding');
+            if (savedPadding !== null) {
+                profileData.profilePadding = parseInt(savedPadding);
+                document.getElementById('profile-padding').value = savedPadding;
+                document.documentElement.style.setProperty('--profile-padding', savedPadding + 'px');
+                document.getElementById('profile-padding-display').textContent = savedPadding + 'px';
+            } else {
+                document.documentElement.style.setProperty('--profile-padding', profileData.profilePadding + 'px');
+                document.getElementById('profile-padding-display').textContent = profileData.profilePadding + 'px';
+            }
         } catch (error) {
             console.error('Erreur lors du chargement des données:', error);
         }
+    } else {
+        // Valeur par défaut
+        document.documentElement.style.setProperty('--profile-padding', profileData.profilePadding + 'px');
+        document.getElementById('profile-padding-display').textContent = profileData.profilePadding + 'px';
     }
 }
 
@@ -562,6 +579,14 @@ function setupEventListeners() {
             controlPanel.style.opacity = savedOpacity / 100;
         }
     }
+
+    document.getElementById('profile-padding').addEventListener('input', function() {
+        const value = parseInt(this.value);
+        profileData.profilePadding = value;
+        document.documentElement.style.setProperty('--profile-padding', value + 'px');
+        document.getElementById('profile-padding-display').textContent = value + 'px';
+        localStorage.setItem('profilePadding', value);
+    });
 }
 
 // Fonctions principales
@@ -1700,7 +1725,9 @@ function generateFullPageHTML() {
         
         .profile-container {
             width: 400px;
-            height: 711px;
+            min-height: 0;
+            padding-top: var(--profile-padding, 12px);
+            padding-bottom: var(--profile-padding, 12px);
             position: relative;
             border-radius: 20px;
             overflow: hidden;
@@ -1862,6 +1889,7 @@ function generateFullPageHTML() {
     </style>
 </head>
 <body>
+    <style>:root{--profile-padding:${profileData.profilePadding}px;}</style>
     ${profileData.pageBackground.type === 'video' && profileData.pageBackground.video ? `
     <video autoplay loop muted playsinline style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: -2;">
         <source src="${profileData.pageBackground.video}" type="video/mp4">
@@ -2677,7 +2705,8 @@ function resetProfile() {
             photoShape: 'circle',
             photoSize: 80,
             description: 'Votre description personnalisée avec emojis et GIFs ! 🎉✨',
-            positions: {}
+            positions: {},
+            profilePadding: 12,
         };
         
         // Réinitialiser tous les inputs
