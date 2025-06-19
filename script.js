@@ -96,6 +96,7 @@ function initializeApp() {
     updatePreview();
     updateDisplayValues();
     updateDisplayTexts();
+    updateProfilePaddingPreview();
 }
 
 // Fonction pour charger les données du profil depuis localStorage
@@ -586,6 +587,7 @@ function setupEventListeners() {
         document.documentElement.style.setProperty('--profile-padding', value + 'px');
         document.getElementById('profile-padding-display').textContent = value + 'px';
         localStorage.setItem('profilePadding', value);
+        updateProfilePaddingPreview();
     });
 }
 
@@ -2816,5 +2818,13 @@ function debugProfileData() {
 
 // Ajouter au global pour pouvoir l'appeler depuis la console
 window.debugProfileData = debugProfileData;
+
+function updateProfilePaddingPreview() {
+    const preview = document.getElementById('profile-preview');
+    if (preview) {
+        preview.style.paddingTop = profileData.profilePadding + 'px';
+        preview.style.paddingBottom = profileData.profilePadding + 'px';
+    }
+}
 
 console.log('Script de personnalisation de profil chargé avec succès !');      
