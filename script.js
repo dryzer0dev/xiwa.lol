@@ -2607,3 +2607,11 @@ function updateProfilePaddingPreview() {
 }
 
 console.log('Script de personnalisation de profil chargé avec succès !');
+
+function enterEditor() {
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const editor = document.getElementById('editor');
+    if (welcomeScreen) welcomeScreen.classList.add('hidden');
+    if (editor) editor.classList.remove('hidden');
+    document.body.classList.add('show-cursor');
+}
