@@ -1866,6 +1866,13 @@ function generateFullPageHTML() {
     </style>
 </head>
 <body>
+    ${profileData.pageBackground.type === 'video' && profileData.pageBackground.video ? `
+    <video autoplay loop muted playsinline style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: -2;">
+        <source src="${profileData.pageBackground.video}" type="video/mp4">
+        <source src="${profileData.pageBackground.video}" type="video/webm">
+        <source src="${profileData.pageBackground.video}" type="video/ogg">
+    </video>
+    ` : ''}
     <!-- Écran de chargement -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-content">
